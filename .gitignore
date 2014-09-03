@@ -2,3 +2,4 @@ _build
 *.docdir
 *.byte
 *.native
+*.sublime-workspace
