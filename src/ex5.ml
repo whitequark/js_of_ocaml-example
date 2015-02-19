@@ -12,19 +12,21 @@ let loadXMLDoc () =
           let elts = xmlDoc##getElementsByTagName (Js.string "CD") in
           let f elt =
             let td cat =
-              Buffer.add_string buf "<td>";
-              begin match Js.Opt.to_option (elt##getElementsByTagName (Js.string cat))##item (0) with
-                | None -> Buffer.add_string buf "&nbsp;"
+              let cell =
+                match Js.Opt.to_option (elt##getElementsByTagName (Js.string cat))##item (0) with
+                | None -> "&nbsp;"
                 | Some hd ->
                   begin match Js.Opt.to_option hd##firstChild with
-                    | None -> Buffer.add_string buf "&nbsp;"
+                    | None -> "&nbsp;"
                     | Some hd ->
                       begin match Js.Opt.to_option hd##nodeValue with
-                        | None -> Buffer.add_string buf "&nbsp;"
-                        | Some hd -> Buffer.add_string buf (Js.to_string hd)
+                        | None -> "&nbsp;"
+                        | Some hd -> Js.to_string hd
                       end
                   end
-              end;
+              in
+              Buffer.add_string buf "<td>";
+              Buffer.add_string buf cell;
               Buffer.add_string buf "</td>";
             in
             Buffer.add_string buf "<tr>";
