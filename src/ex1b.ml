@@ -7,11 +7,20 @@ let () =
   div##id <- Js.string "myDiv";
   button##textContent <- Js.some (Js.string "Change Content");
   let _ =
-    Lwt.bind (Lwt_js_events.make_event Dom_html.Event.click button)
-      (fun _ -> Lwt.bind (XmlHttpRequest.get "ajax_info.txt")
-          (fun {XmlHttpRequest.content; _} -> div##innerHTML <- Js.string content; Lwt.return ()))
+    let state = ref false in
+    Lwt_js_events.clicks button
+      (fun _ev _ ->
+         state := not !state;
+         if !state then
+           Lwt.bind (XmlHttpRequest.get "ajax_info.txt")
+             (fun {XmlHttpRequest.content; _} -> div##innerHTML <- Js.string content; Lwt.return ())
+         else begin
+           div##innerHTML <- Js.string "";
+           Dom.appendChild div h2;
+           Lwt.return()
+         end)
   in
-  ignore (div##appendChild ((h2 :> Dom.node Js.t)));
-  ignore (doc##body##appendChild ((div :> Dom.node Js.t)));
-  ignore (doc##body##appendChild ((button :> Dom.node Js.t)));
+  Dom.appendChild div h2;
+  Dom.appendChild doc##body div;
+  Dom.appendChild doc##body button;
   ()
