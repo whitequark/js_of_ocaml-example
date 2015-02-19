@@ -4,7 +4,6 @@ let () =
   let h2 = Dom_html.createH2 doc in
   let button = Dom_html.createButton ~_type:(Js.string "button") doc in
   h2##textContent <- Js.some (Js.string "Let AJAX change this text");
-  div##id <- Js.string "myDiv";
   button##textContent <- Js.some (Js.string "Change Content");
   let _ =
     let state = ref false in
