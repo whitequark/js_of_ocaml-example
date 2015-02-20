@@ -40,9 +40,10 @@ let onload _ =
          ~form_arg
          "global_features")
       (fun {XmlHttpRequest.content; _} ->
+         let buf = Buffer.create 64 in
+         Buffer.add_string buf (Printf.sprintf "<b>JSON response:</b>%s<br>" content);
          begin match get_response content with
          | OK (gf:global_features Js.t) ->
-           let buf = Buffer.create 64 in
            Buffer.add_string buf (Printf.sprintf "Main page: %s<br>" gf##main_page_);
            Buffer.add_string buf "<table border=1>";
            Buffer.add_string buf "<tr><th>Internal name</th><th>Enabled</th><th>Explanation</th></tr>";
@@ -57,11 +58,12 @@ let onload _ =
              Buffer.add_string buf "</tr>";
            in
            List.iter f global_pages;
-           Buffer.add_string buf "</table>";
-           Buffer.add_string buf content;
-           div##innerHTML <- Js.string (Buffer.contents buf);
-         | KO msg -> div##innerHTML <- Js.string msg
+           Buffer.add_string buf "</table>"
+         | KO msg ->
+           Buffer.add_string buf msg;
+           Buffer.add_string buf "<br>";
          end;
+         div##innerHTML <- Js.string (Buffer.contents buf);
          Lwt.return ())
   in
   Dom.appendChild doc##body div;
