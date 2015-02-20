@@ -1,4 +1,4 @@
-let () =
+let onload _ =
   let doc = Dom_html.document in
   let div = Dom_html.createDiv doc in
   let h2 = Dom_html.createH2 doc in
@@ -22,4 +22,7 @@ let () =
   Dom.appendChild div h2;
   Dom.appendChild doc##body div;
   Dom.appendChild doc##body button;
-  ()
+  Js._false
+
+let () =
+  Dom_html.window##onload <- Dom_html.handler onload
