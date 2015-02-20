@@ -12,18 +12,11 @@ let loadXMLDoc () =
           let elts = xmlDoc##getElementsByTagName (Js.string "CD") in
           let f elt =
             let td cat =
+              let case f x = Js.Opt.case x (fun () -> "&nbsp;") f in
               let cell =
-                match Js.Opt.to_option (elt##getElementsByTagName (Js.string cat))##item (0) with
-                | None -> "&nbsp;"
-                | Some hd ->
-                  begin match Js.Opt.to_option hd##firstChild with
-                    | None -> "&nbsp;"
-                    | Some hd ->
-                      begin match Js.Opt.to_option hd##nodeValue with
-                        | None -> "&nbsp;"
-                        | Some hd -> Js.to_string hd
-                      end
-                  end
+                case
+                  (fun hd -> case (fun hd -> case Js.to_string hd##nodeValue) hd##firstChild)
+                  ((elt##getElementsByTagName (Js.string cat))##item (0))
               in
               Buffer.add_string buf "<td>";
               Buffer.add_string buf cell;
