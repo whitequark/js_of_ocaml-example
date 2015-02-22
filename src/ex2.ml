@@ -5,26 +5,24 @@ let loadXMLDoc () =
     | XmlHttpRequest.DONE, 200 ->
       let xmlDoc = xmlhttp##responseXML in
       let buf = Buffer.create 16 in
-      begin match Js.Opt.to_option xmlDoc with
-        | None -> ()
-        | Some xmlDoc ->
-          let elts = xmlDoc##getElementsByTagName (Js.string "ARTIST") in
-          for i = 0 to elts##length - 1 do
-            match Js.Opt.to_option (elts##item (i)) with
-            | None -> ()
-            | Some elt ->
-              begin match Js.Opt.to_option elt##firstChild with
-                | None -> ()
-                | Some elt ->
-                  begin match Js.Opt.to_option elt##nodeValue with
-                    | None -> ()
-                    | Some elt ->
-                      Buffer.add_string buf (Js.to_string elt);
-                      Buffer.add_string buf "<br>"
-                  end
-              end
-          done;
-      end;
+      let iter f x = Js.Opt.iter x f in
+      iter
+        (fun xmlDoc ->
+           let elts = xmlDoc##getElementsByTagName (Js.string "ARTIST") in
+           for i = 0 to elts##length - 1 do
+             iter
+               (fun elt ->
+                  iter
+                    (fun elt ->
+                       iter
+                         (fun elt ->
+                            Buffer.add_string buf (Js.to_string elt);
+                            Buffer.add_string buf "<br>")
+                         elt##nodeValue)
+                    elt##firstChild)
+               (elts##item (i))
+           done)
+        xmlDoc;
       (Dom_html.getElementById "myDiv")##innerHTML <- Js.string (Buffer.contents buf)
     | _ -> ()
   in

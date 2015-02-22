@@ -10,32 +10,24 @@ let loadXMLDoc () =
         | None -> ()
         | Some xmlDoc ->
           let elts = xmlDoc##getElementsByTagName (Js.string "CD") in
-          for i = 0 to elts##length - 1 do
-            Buffer.add_string buf "<tr>";
-            begin match Js.Opt.to_option (elts##item (i)) with
-            | None -> ()
-            | Some elt ->
-              let td cat =
-                Buffer.add_string buf "<td>";
-                begin match Js.Opt.to_option (elt##getElementsByTagName (Js.string cat))##item (0) with
-                  | None -> Buffer.add_string buf "&nbsp;"
-                  | Some hd ->
-                    begin match Js.Opt.to_option hd##firstChild with
-                      | None -> Buffer.add_string buf "&nbsp;"
-                      | Some hd ->
-                        begin match Js.Opt.to_option hd##nodeValue with
-                          | None -> Buffer.add_string buf "&nbsp;"
-                          | Some hd -> Buffer.add_string buf (Js.to_string hd)
-                        end
-                    end
-                end;
-                Buffer.add_string buf "</td>";
+          let f elt =
+            let td cat =
+              let case f x = Js.Opt.case x (fun () -> "&nbsp;") f in
+              let cell =
+                case
+                  (fun hd -> case (fun hd -> case Js.to_string hd##nodeValue) hd##firstChild)
+                  ((elt##getElementsByTagName (Js.string cat))##item (0))
               in
-              td "TITLE";
-              td "ARTIST";
-            end;
+              Buffer.add_string buf "<td>";
+              Buffer.add_string buf cell;
+              Buffer.add_string buf "</td>";
+            in
+            Buffer.add_string buf "<tr>";
+            td "TITLE";
+            td "ARTIST";
             Buffer.add_string buf "</tr>";
-          done;
+          in
+          List.iter f (Dom.list_of_nodeList elts)
       end;
       Buffer.add_string buf "</table>";
       (Dom_html.getElementById "txtCDInfo")##innerHTML <- Js.string (Buffer.contents buf)
